@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+//Criando com valores aleatórios
+
+#define N 10 // Número de elementos do vetor
+#define M 5  // Número de threads do programa
+
+int vetor[N];
+
+// Função que eleva ao quadrado um elemento do vetor
+void *eleva_ao_quadrado(void *arg) {
+    int *indice = (int *)arg;
+    vetor[*indice] *= vetor[*indice];
+    pthread_exit(NULL);
+}
+
+// Função para inicializar o vetor com valores aleatórios
+void inicializa_vetor() {
+    srand(time(NULL));
+    for (int i = 0; i < N; i++) {
+        vetor[i] = rand() % 100; // Gera números aleatórios entre 0 e 99
+    }
+}
+
+// Função para imprimir o vetor
+void imprime_vetor() {
+    printf("Vetor:\n");
+    for (int i = 0; i < N; i++) {
+        printf("%d ", vetor[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    inicializa_vetor();
+    imprime_vetor();
+
+    pthread_t threads[M];
+    int indices[M];
+
+    // Criando as threads
+    for (int i = 0; i < M; i++) {
+        indices[i] = i;
+        if (pthread_create(&threads[i], NULL, eleva_ao_quadrado, &indices[i]) != 0) {
+            perror("pthread_create");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Aguardando o término das threads
+    for (int i = 0; i < M; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    imprime_vetor();
+
+    return 0;
+}
